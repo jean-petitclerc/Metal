@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% macro render_field(field) %}
+    <div class="form-group">
+        {{ field.label(class="control-label") }}
+        {{ field(**kwargs)|safe }}
+        {% if field.errors %}
+            <ul class=errors>
+            {% for error in field.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Modifier un Band</h1>
+    </div>
+
+    <form class="form" method="post" role="form">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_errors(form, hiddens="only") }}
+        <div class="form-group ">
+            {{ render_field(form.band_name, class="form-control") }}
+        </div>
+        <div class="form-group ">
+            {{ render_field(form.band_desc, class="form-control", rows='10') }}
+        </div>
+        <input class="btn btn-default" id="submit" name="submit" type="submit" value="Modifier">
+        <a href="{{ url_for('list_bands') }}" class="btn btn-default">Annuler</a>
+    </form>
+
+    <h2>Genres</h2>
+    {% if count_genres > 0 %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th class="text-center">Enlever</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for genre in genres %}
+                    <tr>
+                        <td>{{ genre['genre_name'] }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('del_band_genre', genre_id=genre.genre_id) }}"
+                               class="btn btn-danger btn-xs" data-title="Enlever">
+                               <span class="glyphicon glyphicon-minus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <em>Aucun genre pour ce band.</em>
+        <p>
+            Cliquer&nbsp<a href="{{ url_for('sel_band_genre', band_id=band.band_id) }}">ici</a>&nbsp;pour en ajouter.
+        </p>
+    {% endif %}
+    <a href="{{ url_for('sel_band_genre', band_id=band.band_id) }}" class="btn btn-default">Gérer ses genres</a>
+    <a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour</a>
+    <p>&nbsp;</p>
+
+    <h2>Pays</h2>
+    {% if count_countries > 0 %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom français</th>
+                    <th>Nom anglais</th>
+                    <th class="text-center">Enlever</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for country in countries %}
+                    <tr>
+                        <td>{{ country['country_name_fr'] }}</td>
+                        <td>{{ country['country_name_en'] }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('del_band_country', country_id=country.country_id) }}"
+                               class="btn btn-danger btn-xs" data-title="Enlever">
+                               <span class="glyphicon glyphicon-minus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <em>Aucun pays pour ce band.</em>
+        <p>
+            Cliquer&nbsp<a href="{{ url_for('sel_band_country', band_id=band.band_id) }}">ici</a>&nbsp;pour en ajouter.
+        </p>
+    {% endif %}
+    <a href="{{ url_for('sel_band_country', band_id=band.band_id) }}" class="btn btn-default">Gérer ses pays</a>
+    <a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour</a>
+    <p>&nbsp;</p>
+
+    <h2>Ton évaluation et commentaire</h2>
+    {% if band_comment %}
+        <h3>Évaluation</h3>
+        {% for i in range(band_comment.rating) %}
+            <span class="glyphicon glyphicon-star"></span>
+        {% endfor %}
+        <h3>Commentaire</h3>
+        <div class = "panel panel-primary">
+            <div class = "panel-heading">
+                <h2 class = "panel-title">{{ band_comment.comment_title }}</h2>
+            </div>
+            <div class = "panel-body">
+                {{ band_comment.comment_text }}
+            </div>
+        </div>
+        <a href="{{ url_for('upd_band_comment', comment_id=band_comment.comment_id) }}" class="btn btn-default">Modifier</a>
+        <a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour</a>
+    {% else %}
+        Tu n'as pas encore évalué ce band.
+        <br>
+        <a href="{{ url_for('add_band_comment') }}" class="btn btn-default">Ajouter un commentaire</a>
+        <a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour</a>
+    {% endif %}
+    <p>&nbsp;</p>
+</div>
+{% endblock %}

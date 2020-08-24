@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Pays: {{ country.country_name_fr }}</h1>
+    </div>
+    <p>&nbsp</p>
+    <div class = "panel panel-primary">
+        <div class = "panel-heading">
+            <h2 class = "panel-title">Nom français/anglais</h2>
+        </div>
+
+        <div class = "panel-body">
+            {{ country.country_name_fr }}/{{ country.country_name_en }}
+        </div>
+    </div>
+    <p>&nbsp</p>
+    <div class = "panel panel-primary">
+        <div class = "panel-heading">
+            <h2 class = "panel-title">Codes Numérique, Alpha 2 et Alpha 3</h2>
+        </div>
+
+        <div class = "panel-body">
+            {{ country.country_code }}, {{ country.country_alpha2 }} et {{ country.country_alpha3 }}
+        </div>
+    </div>
+
+    <p><a href="{{ url_for('list_countries') }}" class="btn btn-default">Retour à la liste</a></p>
+    <p>&nbsp</p>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Gérer les Pays</h1>
+    </div>
+    <h2>Pays déjà assignés à ce band</h2>
+    {% if band_countries %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th class="text-center">Enlever</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b_c in band_countries %}
+                    <tr>
+                        <td>{{ b_c['country_name'] }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('del_band_country', country_id=b_c.country_id) }}"
+                               class="btn btn-danger btn-xs" data-title="Enlever">
+                               <span class="glyphicon glyphicon-minus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <em>Ce band n'a pas de pays assigné.</em>
+    {% endif %}
+
+    <h2>Liste des pays disponibles</h2>
+    {% if countries|length > 0 %}
+        <p>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom français</th>
+                    <th>Nom anglais</th>
+                    <th class="text-center">Ajouter</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in countries %}
+                    <tr>
+                        <td>{{ c['country_name_fr'] }}</td>
+                        <td>{{ c['country_name_en'] }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('add_band_country', band_id=band_id, country_id=c['country_id']) }}"
+                               class="btn btn-primary btn-xs" data-title="Ajouter">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </p>
+    {% else %}
+        <em>Aucune pays disponible pour ce band.</em>
+    {% endif %}
+    <p>&nbsp;</p>
+    <a href="{{ url_for('upd_band', band_id=band_id) }}" class="btn btn-default">Retour</a>
+</div>
+{% endblock %}

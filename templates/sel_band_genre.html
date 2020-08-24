@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Gérer les Genres du Band</h1>
+    </div>
+    <h2>Genres déjà assignés à ce band</h2>
+    {% if band_genres %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th class="text-center">Enlever</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b_g in band_genres %}
+                    <tr>
+                        <td>{{ b_g['genre_name'] }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('del_band_genre', genre_id=b_g.genre_id) }}"
+                               class="btn btn-danger btn-xs" data-title="Enlever">
+                               <span class="glyphicon glyphicon-minus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <em>Ce band n'a pas de genre assigné.</em>
+    {% endif %}
+
+    <h2>Liste des genres disponibles</h2>
+    {% if genres|length > 0 %}
+        <p>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th class="text-center">Ajouter</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in genres %}
+                    <tr>
+                        <td>{{ g['genre_name'] }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('add_band_genre', genre_id=g['genre_id']) }}"
+                               class="btn btn-primary btn-xs" data-title="Ajouter">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </p>
+    {% else %}
+        <em>Aucune genre disponible pour ce band.</em>
+    {% endif %}
+    <p>&nbsp;</p>
+    <a href="{{ url_for('upd_band', band_id=band_id) }}" class="btn btn-default">Retour</a>
+</div>
+{% endblock %}

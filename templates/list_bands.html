@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Bands</title>
+</head>
+<body>
+
+</body>
+</html>{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Listes des Bands de Métal</h1>
+    </div>
+    <p>
+        {% if bands %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Non du band</th>
+                    <th>Pays</th>
+                    <th>Genres</th>
+                    <th>Fans</th>
+                    <th class="text-center">Suis-je Fan?</th>
+                    <th class="text-center">Modifier</th>
+                    <th class="text-center">Supprimer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for band in bands %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('show_band', band_id=band['band_id']) }}">{{ band['band_name'] }}</a>
+                        </td>
+                        <td>{{ band.country_list }}</td>
+                        <td>{{ band.genre_list }}</td>
+                        <td>{{ band.count_fans }}</td>
+                        {% if band.is_fan %}
+                            <td class="text-center">
+                                <a href="{{ url_for('del_fan', band_id=band['band_id']) }}"
+                                   class="btn btn-warning btn-xs" data-title="Retirer">
+                                   <span class="glyphicon glyphicon-minus"></span>
+                                </a>
+                            </td>
+                        {% else %}
+                            <td class="text-center">
+                                <a href="{{ url_for('add_fan', band_id=band['band_id']) }}"
+                                   class="btn btn-success btn-xs" data-title="Ajouter">
+                                   <span class="glyphicon glyphicon-plus"></span>
+                                </a>
+                            </td>
+                        {% endif %}
+
+                        <td class="text-center">
+                            <a href="{{ url_for('upd_band', band_id=band['band_id']) }}"
+                               class="btn btn-primary btn-xs" data-title="Modifier">
+                               <span class="glyphicon glyphicon-pencil"></span>
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('del_band', band_id=band['band_id']) }}"
+                               class="btn btn-danger btn-xs" data-title="Supprimer">
+                               <span class="glyphicon glyphicon-trash"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <em>Il n'y a pas de band dans la base de données</em>
+        {% endif %}
+    </p>
+    <p>
+        <a href="{{ url_for('add_band') }}" class="btn btn-default">Ajouter un band</a>
+        <a href="{{ url_for('index') }}" class="btn btn-default">Retour</a>
+    </p>
+</div>
+{% endblock %}

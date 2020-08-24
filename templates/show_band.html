@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Band: {{ band.band_name }}</h1>
+    </div>
+    <div class = "panel panel-primary">
+        <div class = "panel-heading">
+            <h2 class = "panel-title">Description</h2>
+        </div>
+
+        <div class = "panel-body">
+            {{ band.band_desc }}
+        </div>
+    </div>
+
+    <p>&nbsp</p>
+    <p>Ajouté par: {{ band.audit_crt_user_name }}, le {{ band.audit_crt_ts }}</p>
+    {% if band.audit_upd_user %}
+        <p>Modifié par: {{ band.audit_upd_user_name }}, le {{ band.audit_upd_ts }}</p>
+    {% endif %}
+    <p><a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour à la liste</a></p>
+    <p>&nbsp</p>
+</div>
+{% endblock %}
