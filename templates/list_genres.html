@@ -21,7 +21,13 @@
                         <td>
                             <a href="{{ url_for('show_genre', genre_id=genre['genre_id']) }}">{{ genre['genre_name'] }}</a>
                         </td>
-                        <td class="text-center">{{ genre['count_bands'] }}</td>
+                        <td class="text-center">
+                            {% if genre['count_bands'] > 0 %}
+                                <a href="{{ url_for('list_bands_by_genre', genre_id=genre['genre_id']) }}">{{ genre['count_bands'] }}</a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
                         <td class="text-center">
                             <a href="{{ url_for('upd_genre', genre_id=genre['genre_id']) }}"
                                class="btn btn-primary btn-xs" data-title="Modifier">

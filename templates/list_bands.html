@@ -22,7 +22,8 @@
                     <th>Pays</th>
                     <th>Genres</th>
                     <th>Fans</th>
-                    <th class="text-center">Suis-je Fan?</th>
+                    <th class="text-center">Suis-je fan?</th>
+                    <th class="text-center">Changer</th>
                     <th class="text-center">Modifier</th>
                     <th class="text-center">Supprimer</th>
                 </tr>
@@ -31,23 +32,25 @@
                 {% for band in bands %}
                     <tr>
                         <td>
-                            <a href="{{ url_for('show_band', band_id=band['band_id']) }}">{{ band['band_name'] }}</a>
+                            <a href="{{ url_for('show_band', band_id=band['band_id'], return_to='list_bands', ent_id=0) }}">{{ band['band_name'] }}</a>
                         </td>
                         <td>{{ band.country_list }}</td>
                         <td>{{ band.genre_list }}</td>
                         <td>{{ band.count_fans }}</td>
                         {% if band.is_fan %}
+                            <td class="text-center">Oui</td>
                             <td class="text-center">
                                 <a href="{{ url_for('del_fan', band_id=band['band_id']) }}"
                                    class="btn btn-warning btn-xs" data-title="Retirer">
-                                   <span class="glyphicon glyphicon-minus"></span>
+                                   <span class="glyphicon glyphicon-thumbs-down"></span>
                                 </a>
                             </td>
                         {% else %}
+                            <td class="text-center">Non</td>
                             <td class="text-center">
                                 <a href="{{ url_for('add_fan', band_id=band['band_id']) }}"
                                    class="btn btn-success btn-xs" data-title="Ajouter">
-                                   <span class="glyphicon glyphicon-plus"></span>
+                                   <span class="glyphicon glyphicon-thumbs-up"></span>
                                 </a>
                             </td>
                         {% endif %}

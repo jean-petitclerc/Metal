@@ -10,10 +10,10 @@
             <thead>
                 <tr>
                     <th>Code</th>
-                    <th>Alpha 2</th>
-                    <th>Alpha 3</th>
                     <th>Nom français du pays</th>
                     <th>Nom anglais du pays</th>
+                    <th>Alpha 2</th>
+                    <th>Alpha 3</th>
                     <th>Bands</th>
                     <th class="text-center">Modifier</th>
                     <th class="text-center">Supprimer</th>
@@ -25,11 +25,17 @@
                         <td>
                             <a href="{{ url_for('show_country', country_id=country['country_id']) }}">{{ country['country_code'] }}</a>
                         </td>
-                        <td>{{ country['country_alpha2'] }}</td>
-                        <td>{{ country['country_alpha3'] }}</td>
                         <td>{{ country['country_name_fr'] }}</td>
                         <td>{{ country['country_name_en'] }}</td>
-                        <td class="text-center">{{ country['count_bands'] }}</td>
+                        <td>{{ country['country_alpha2'] }}</td>
+                        <td>{{ country['country_alpha3'] }}</td>
+                        <td class="text-center">
+                            {% if country['count_bands'] > 0 %}
+                                <a href="{{ url_for('list_bands_by_country', country_id=country['country_id']) }}">{{ country['count_bands'] }}</a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
                         <td class="text-center">
                             <a href="{{ url_for('upd_country', country_id=country['country_id']) }}"
                                class="btn btn-primary btn-xs" data-title="Modifier">

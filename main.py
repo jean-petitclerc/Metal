@@ -775,12 +775,14 @@ def list_bands():
         abort(500)
 
 
-@app.route('/show_band/<int:band_id>')
-def show_band(band_id):
+@app.route('/show_band/<int:band_id>/<string:return_to>/<int:ent_id>')
+def show_band(band_id, return_to, ent_id):
     # TODO : Lister les bands
     if not logged_in():
         return redirect(url_for('login'))
     try:
+        app.logger.debug("Entering show_band with band_id: " + str(band_id) + " return to: " + return_to +
+                         " ent_id: " + str(ent_id))
         user_id = session.get('user_id')
         band = db_band_by_id(band_id)
         if band:
@@ -789,7 +791,7 @@ def show_band(band_id):
             if band.audit_upd_user_id:
                 u = db_user_by_id(band.audit_upd_user_id)
                 band.audit_upd_user_name = u.user_name()
-            return render_template("show_band.html", band=band)
+            return render_template("show_band.html", band=band, return_to=return_to, ent_id=ent_id)
         else:
             flash("L'information n'a pas pu être retrouvée.")
             return redirect(url_for('list_bands'))
@@ -895,6 +897,122 @@ def del_band(band_id):
         else:
             flash("L'information n'a pas pu être retrouvée.")
         return redirect(url_for('list_bands'))
+
+
+@app.route('/list_bands_by_country/<int:country_id>')
+def list_bands_by_country(country_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    try:
+        user_id = session.get('user_id')
+        country = db_country_by_id(country_id)
+        results = BandCountry.query.join(Band) \
+            .filter(BandCountry.country_id == country_id) \
+            .add_columns(Band.band_id, Band.band_name) \
+            .order_by(Band.band_name)
+        bands = []
+        for row in results:
+            app.logger.debug(type(row))
+            band = dict()
+            app.logger.debug(type(band))
+            app.logger.debug('Band ID: ' + str(row[1]))
+            app.logger.debug('Band name: ' + row[2])
+            band['band_id'] = row[1]
+            band['band_name'] = row[2]
+            bands.append(band)
+
+        for band in bands:
+            band['count_fans'] = UserBand.query.filter_by(band_id=band['band_id']).count()
+            if db_is_fan(band['band_id'], user_id):
+                band['is_fan'] = True
+            else:
+                band['is_fan'] = False
+
+            countries = BandCountry.query.join(Country, BandCountry.country_id==Country.country_id) \
+                .filter(BandCountry.band_id == band['band_id']) \
+                .add_columns(Country.country_name_fr).order_by(Country.country_name_fr)
+            country_list = []
+            for row in countries:
+                country_list.append(row[1])
+            if len(country_list) > 0:
+                band['country_list'] = ', '.join(country_list)
+            else:
+                band['country_list'] = "Pas de pays défini"
+
+            genres = BandGenre.query.join(Genre, BandGenre.genre_id==Genre.genre_id) \
+                .filter(BandGenre.band_id == band['band_id']) \
+                .add_columns(Genre.genre_name).order_by(Genre.genre_name)
+            genre_list = []
+            for row in genres:
+                genre_list.append(row[1])
+            if len(genre_list) > 0:
+                band['genre_list'] = ', '.join(genre_list)
+            else:
+                band['genre_list'] = "Pas de genre défini"
+        return render_template('list_bands_by_country.html', country=country, bands=bands)
+    except Exception as e:
+        flash("Quelque chose n'a pas fonctionné.")
+        app.logger.error('Error: ' + str(e))
+        abort(500)
+
+
+@app.route('/list_bands_by_genre/<int:genre_id>')
+def list_bands_by_genre(genre_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    try:
+        user_id = session.get('user_id')
+        genre = db_genre_by_id(genre_id)
+        results = BandGenre.query.join(Band, BandGenre.band_id == Band.band_id) \
+            .filter(BandGenre.genre_id == genre_id) \
+            .add_columns(Band.band_id, Band.band_name) \
+            .order_by(Band.band_name)
+
+        bands = []
+        for row in results:
+            app.logger.debug(type(row))
+            band = dict()
+            app.logger.debug(type(band))
+            app.logger.debug('Band ID: ' + str(row[1]))
+            app.logger.debug('Band name: ' + row[2])
+            band['band_id'] = row[1]
+            band['band_name'] = row[2]
+            bands.append(band)
+
+        for band in bands:
+            band['count_fans'] = UserBand.query.filter_by(band_id=band['band_id']).count()
+            if db_is_fan(band['band_id'], user_id):
+                band['is_fan'] = True
+            else:
+                band['is_fan'] = False
+
+            countries = BandCountry.query.join(Country, BandCountry.country_id==Country.country_id) \
+                .filter(BandCountry.band_id == band['band_id']) \
+                .add_columns(Country.country_name_fr).order_by(Country.country_name_fr)
+            country_list = []
+            for row in countries:
+                country_list.append(row[1])
+            if len(country_list) > 0:
+                band['country_list'] = ', '.join(country_list)
+            else:
+                band['country_list'] = "Pas de pays défini"
+
+            genres = BandGenre.query.join(Genre, BandGenre.genre_id==Genre.genre_id) \
+                .filter(BandGenre.band_id == band['band_id']) \
+                .add_columns(Genre.genre_name).order_by(Genre.genre_name)
+            genre_list = []
+            for row in genres:
+                genre_list.append(row[1])
+            if len(genre_list) > 0:
+                band['genre_list'] = ', '.join(genre_list)
+            else:
+                band['genre_list'] = "Pas de genre défini"
+
+        return render_template('list_bands_by_genre.html', genre=genre, bands=bands)
+    except Exception as e:
+        flash("Quelque chose n'a pas fonctionné.")
+        app.logger.error('Error: ' + str(e))
+        abort(500)
 
 
 @app.route('/add_fan/<int:band_id>')

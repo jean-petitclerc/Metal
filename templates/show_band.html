@@ -19,7 +19,13 @@
     {% if band.audit_upd_user %}
         <p>Modifié par: {{ band.audit_upd_user_name }}, le {{ band.audit_upd_ts }}</p>
     {% endif %}
-    <p><a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour à la liste</a></p>
+    {% if return_to == 'list_bands_by_genre' %}
+        <p><a href="{{ url_for('list_bands_by_genre', genre_id=ent_id) }}" class="btn btn-default">Retour à la liste</a></p>
+    {% elif return_to == 'list_bands_by_country' %}
+        <p><a href="{{ url_for('list_bands_by_country', country_id=ent_id) }}" class="btn btn-default">Retour à la liste</a></p>
+    {% else %}
+        <p><a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour à la liste</a></p>
+    {% endif %}
     <p>&nbsp</p>
 </div>
 {% endblock %}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Bands dans le pays {{ country.country_name_fr }}</title>
+</head>
+<body>
+
+</body>
+</html>{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Listes des Bands de Métal dans le pays {{ country.country_name_fr }}</h1>
+    </div>
+    <p>
+        {% if bands %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Non du band</th>
+                    <th>Pays</th>
+                    <th>Genres</th>
+                    <th>Fans</th>
+                    <th class="text-center">Suis-je Fan?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for band in bands %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('show_band', band_id=band['band_id'], return_to="list_bands_by_country", ent_id=country.country_id) }}">{{ band['band_name'] }}</a>
+                        </td>
+                        <td>{{ band.country_list }}</td>
+                        <td>{{ band.genre_list }}</td>
+                        <td>{{ band.count_fans }}</td>
+                        {% if band.is_fan %}
+                            <td class="text-center">Oui</td>
+                        {% else %}
+                            <td class="text-center">Non</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <em>Il n'y a pas de band dans la base de données</em>
+        {% endif %}
+    </p>
+    <p>
+        <a href="{{ url_for('list_countries') }}" class="btn btn-default">Retour</a>
+    </p>
+</div>
+{% endblock %}
