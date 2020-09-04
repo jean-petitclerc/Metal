@@ -10,10 +10,56 @@
         </div>
 
         <div class = "panel-body">
-            {{ band.band_desc }}
+            {% if band.band_desc %}
+                {{ band.band_desc }}
+            {% else %}
+                Pas de description...
+            {% endif %}
         </div>
     </div>
 
+    <p>&nbsp</p>
+    <h2>Pays</h2>
+    {% if l_countries %}
+        {{ l_countries }}
+    {% else %}
+        Il n'y a pas de pays listé.
+    {% endif %}
+
+    <p>&nbsp</p>
+    <h2>Genres</h2>
+    {% if l_genres %}
+        {{ l_genres }}
+    {% else %}
+        Il n'y a pas de genre listé.
+    {% endif %}
+
+    <p>&nbsp</p>
+    <h2>Commentaires</h2>
+    {% if comments %}
+        {% for comment in comments %}
+            <h3>{{ comment.user_name }}</h3>
+            {% for i in range(comment.rating) %}
+                <span class="glyphicon glyphicon-star"></span>
+            {% endfor %}
+
+            <div class = "panel panel-primary">
+                <div class = "panel-heading">
+                    <h4 class = "panel-title">{{ comment.comment_title }}</h4>
+                </div>
+
+                <div class = "panel-body">
+                    {% if comment.comment_text %}
+                        {{ comment.comment_text }}
+                    {% else %}
+                        Pas de détail...
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        Personne n'a écrit de commentaire.
+    {% endif %}
     <p>&nbsp</p>
     <p>Ajouté par: {{ band.audit_crt_user_name }}, le {{ band.audit_crt_ts }}</p>
     {% if band.audit_upd_user %}
@@ -23,6 +69,8 @@
         <p><a href="{{ url_for('list_bands_by_genre', genre_id=ent_id) }}" class="btn btn-default">Retour à la liste</a></p>
     {% elif return_to == 'list_bands_by_country' %}
         <p><a href="{{ url_for('list_bands_by_country', country_id=ent_id) }}" class="btn btn-default">Retour à la liste</a></p>
+    {% elif return_to == 'list_my_bands' %}
+        <p><a href="{{ url_for('list_my_bands') }}" class="btn btn-default">Retour à la liste</a></p>
     {% else %}
         <p><a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour à la liste</a></p>
     {% endif %}

@@ -299,7 +299,8 @@ class UpdBandForm(FlaskForm):
 class AddBandCommentForm(FlaskForm):
     comment_title = StringField('Titre', validators=[DataRequired(message='Le titre est requis.')])
     comment_text = TextAreaField('Commentaire')
-    rating = RadioField('Evaluation', choices=[(1, 'Médiocre'), (2, 'Pas très bon'), (3, 'Pas si pire'), (4, 'Bon'), (5, 'Excellent')])
+    rating = RadioField('Evaluation', choices=[(1, 'Médiocre'), (2, 'Pas très bon'), (3, 'Pas si pire'), (4, 'Bon'),
+                                               (5, 'Excellent')])
     submit = SubmitField('Ajouter')
 
 
@@ -307,13 +308,15 @@ class AddBandCommentForm(FlaskForm):
 class UpdBandCommentForm(FlaskForm):
     comment_title = StringField('Titre', validators=[DataRequired(message='Le titre est requis.')])
     comment_text = TextAreaField('Commentaire')
-    rating = RadioField('Evaluation', choices=[(1, 'Médiocre'), (2, 'Pas très bon'), (3, 'Pas si pire'), (4, 'Bon'), (5, 'Excellent'), (0, "Pas d'évaluation")])
+    rating = RadioField('Evaluation', choices=[(1, 'Médiocre'), (2, 'Pas très bon'), (3, 'Pas si pire'), (4, 'Bon'),
+                                               (5, 'Excellent'), (0, "Pas d'évaluation")])
     submit = SubmitField('Modifier')
 
 # The following functions are views
 # ----------------------------------------------------------------------------------------------------------------------
-
 # Custom error pages
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     app.logger.error('Page non trouvée. ' + str(e))
@@ -497,7 +500,6 @@ def list_countries():
     if not logged_in():
         return redirect(url_for('login'))
     try:
-        user_id = session.get('user_id')
         countries = Country.query.order_by(Country.country_name_fr).all()
         for country in countries:
             country.count_bands = BandCountry.query.filter_by(country_id=country.country_id).count()
@@ -510,11 +512,9 @@ def list_countries():
 
 @app.route('/show_country/<int:country_id>')
 def show_country(country_id):
-    # TODO : Lister les bands
     if not logged_in():
         return redirect(url_for('login'))
     try:
-        user_id = session.get('user_id')
         country = db_country_by_id(country_id)
         if country:
             return render_template("show_country.html", country=country)
@@ -557,7 +557,7 @@ def add_country():
 def upd_country(country_id):
     if not logged_in():
         return redirect(url_for('login'))
-    user_id = session.get('user_id')
+
     country = db_country_by_id(country_id)
     if country is None:
         flash("L'information n'a pas pu être retrouvée.")
@@ -594,7 +594,7 @@ def upd_country(country_id):
 def del_country(country_id):
     if not logged_in():
         return redirect(url_for('login'))
-    user_id = session.get('user_id')
+
     form = DelEntityForm()
     if form.validate_on_submit():
         app.logger.debug('Deleting a country')
@@ -623,7 +623,6 @@ def list_genres():
     if not logged_in():
         return redirect(url_for('login'))
     try:
-        user_id = session.get('user_id')
         genres = Genre.query.order_by(Genre.genre_name).all()
         for genre in genres:
             genre.count_bands = BandGenre.query.filter_by(genre_id=genre.genre_id).count()
@@ -636,11 +635,9 @@ def list_genres():
 
 @app.route('/show_genre/<int:genre_id>')
 def show_genre(genre_id):
-    # TODO : Lister les bands
     if not logged_in():
         return redirect(url_for('login'))
     try:
-        user_id = session.get('user_id')
         genre = db_genre_by_id(genre_id)
         if genre:
             u = db_user_by_id(genre.audit_crt_user_id)
@@ -685,7 +682,6 @@ def add_genre():
 def upd_genre(genre_id):
     if not logged_in():
         return redirect(url_for('login'))
-    user_id = session.get('user_id')
     genre = db_genre_by_id(genre_id)
     if genre is None:
         flash("L'information n'a pas pu être retrouvée.")
@@ -714,7 +710,6 @@ def upd_genre(genre_id):
 def del_genre(genre_id):
     if not logged_in():
         return redirect(url_for('login'))
-    user_id = session.get('user_id')
     form = DelEntityForm()
     if form.validate_on_submit():
         app.logger.debug('Deleting a genre')
@@ -777,13 +772,12 @@ def list_bands():
 
 @app.route('/show_band/<int:band_id>/<string:return_to>/<int:ent_id>')
 def show_band(band_id, return_to, ent_id):
-    # TODO : Lister les bands
+    # TODO : Lister les liens
     if not logged_in():
         return redirect(url_for('login'))
     try:
         app.logger.debug("Entering show_band with band_id: " + str(band_id) + " return to: " + return_to +
                          " ent_id: " + str(ent_id))
-        user_id = session.get('user_id')
         band = db_band_by_id(band_id)
         if band:
             u = db_user_by_id(band.audit_crt_user_id)
@@ -791,7 +785,33 @@ def show_band(band_id, return_to, ent_id):
             if band.audit_upd_user_id:
                 u = db_user_by_id(band.audit_upd_user_id)
                 band.audit_upd_user_name = u.user_name()
-            return render_template("show_band.html", band=band, return_to=return_to, ent_id=ent_id)
+
+            qcomments = BandComment.query.filter_by(band_id=band_id).order_by(BandComment.rating.desc()).all()
+            comments = []
+            for q_comment in qcomments:
+                comment = {'rating': q_comment.rating, 'comment_title': q_comment.comment_title,
+                           'comment_text': q_comment.comment_text}
+                u = db_user_by_id(q_comment.user_id)
+                comment['user_name'] = u.user_name()
+                comments.append(comment)
+
+            qcountries = BandCountry.query.filter_by(band_id=band_id).order_by(BandCountry.country_id).all()
+            countries = []
+            for q_country in qcountries:
+                c = db_country_by_id(q_country.country_id)
+                countries.append(c.country_name_fr)
+            l_countries = ', '.join(countries)
+
+            qgenres = BandGenre.query.filter_by(band_id=band_id).order_by(BandGenre.genre_id).all()
+            genres = []
+            for q_genre in qgenres:
+                g = db_genre_by_id(q_genre.genre_id)
+                genres.append(g.genre_name)
+            l_genres = ', '.join(genres)
+
+            return render_template("show_band.html", band=band, l_countries=l_countries, l_genres=l_genres,
+                                   comments=comments,
+                                   return_to=return_to, ent_id=ent_id)
         else:
             flash("L'information n'a pas pu être retrouvée.")
             return redirect(url_for('list_bands'))
@@ -833,8 +853,7 @@ def upd_band(band_id):
     count_countries = 0
     countries = []
     for band_c in band.countries:
-        country = {}
-        country['country_id'] = band_c.country_id
+        country = {'country_id': band_c.country_id}
         qcountry = Country.query.get(band_c.country_id)
         country['country_name_fr'] = qcountry.country_name_fr
         country['country_name_en'] = qcountry.country_name_en
@@ -843,8 +862,7 @@ def upd_band(band_id):
     count_genres = 0
     genres = []
     for band_g in band.genres:
-        genre = {}
-        genre['genre_id'] = band_g.genre_id
+        genre = {'genre_id': band_g.genre_id}
         qgenre = Genre.query.get(band_g.genre_id)
         genre['genre_name'] = qgenre.genre_name
         genres.append(genre)
@@ -889,7 +907,7 @@ def del_band(band_id):
     else:
         band = db_band_by_id(band_id)
         if band:
-            fan = UserBand.query.filter(UserBand.band_id==band_id,UserBand.user_id!=user_id).first()
+            fan = UserBand.query.filter(UserBand.band_id == band_id, UserBand.user_id != user_id).first()
             if fan:
                 flash("Le band a un autre fan que toi, donc tu ne peux pas l'effacer.")
             else:
@@ -897,6 +915,55 @@ def del_band(band_id):
         else:
             flash("L'information n'a pas pu être retrouvée.")
         return redirect(url_for('list_bands'))
+
+
+@app.route('/list_my_bands')
+def list_my_bands():
+    if not logged_in():
+        return redirect(url_for('login'))
+    try:
+        user_id = session.get('user_id')
+        results = UserBand.query.join(Band) \
+            .filter(UserBand.user_id == user_id) \
+            .add_columns(Band.band_id, Band.band_name) \
+            .order_by(Band.band_name)
+
+        bands = []
+        for row in results:
+            band = dict()
+            band['band_id'] = row[1]
+            band['band_name'] = row[2]
+            bands.append(band)
+
+        for band in bands:
+            band['count_fans'] = UserBand.query.filter_by(band_id=band['band_id']).count()
+
+            countries = BandCountry.query.join(Country, BandCountry.country_id == Country.country_id) \
+                .filter(BandCountry.band_id == band['band_id']) \
+                .add_columns(Country.country_name_fr).order_by(Country.country_name_fr)
+            country_list = []
+            for row in countries:
+                country_list.append(row[1])
+            if len(country_list) > 0:
+                band['country_list'] = ', '.join(country_list)
+            else:
+                band['country_list'] = "Pas de pays défini"
+
+            genres = BandGenre.query.join(Genre, BandGenre.genre_id == Genre.genre_id) \
+                .filter(BandGenre.band_id == band['band_id']) \
+                .add_columns(Genre.genre_name).order_by(Genre.genre_name)
+            genre_list = []
+            for row in genres:
+                genre_list.append(row[1])
+            if len(genre_list) > 0:
+                band['genre_list'] = ', '.join(genre_list)
+            else:
+                band['genre_list'] = "Pas de genre défini"
+        return render_template('list_my_bands.html', bands=bands)
+    except Exception as e:
+        flash("Quelque chose n'a pas fonctionné.")
+        app.logger.error('Error: ' + str(e))
+        abort(500)
 
 
 @app.route('/list_bands_by_country/<int:country_id>')
@@ -912,11 +979,7 @@ def list_bands_by_country(country_id):
             .order_by(Band.band_name)
         bands = []
         for row in results:
-            app.logger.debug(type(row))
             band = dict()
-            app.logger.debug(type(band))
-            app.logger.debug('Band ID: ' + str(row[1]))
-            app.logger.debug('Band name: ' + row[2])
             band['band_id'] = row[1]
             band['band_name'] = row[2]
             bands.append(band)
@@ -928,7 +991,7 @@ def list_bands_by_country(country_id):
             else:
                 band['is_fan'] = False
 
-            countries = BandCountry.query.join(Country, BandCountry.country_id==Country.country_id) \
+            countries = BandCountry.query.join(Country, BandCountry.country_id == Country.country_id) \
                 .filter(BandCountry.band_id == band['band_id']) \
                 .add_columns(Country.country_name_fr).order_by(Country.country_name_fr)
             country_list = []
@@ -939,7 +1002,7 @@ def list_bands_by_country(country_id):
             else:
                 band['country_list'] = "Pas de pays défini"
 
-            genres = BandGenre.query.join(Genre, BandGenre.genre_id==Genre.genre_id) \
+            genres = BandGenre.query.join(Genre, BandGenre.genre_id == Genre.genre_id) \
                 .filter(BandGenre.band_id == band['band_id']) \
                 .add_columns(Genre.genre_name).order_by(Genre.genre_name)
             genre_list = []
@@ -986,7 +1049,7 @@ def list_bands_by_genre(genre_id):
             else:
                 band['is_fan'] = False
 
-            countries = BandCountry.query.join(Country, BandCountry.country_id==Country.country_id) \
+            countries = BandCountry.query.join(Country, BandCountry.country_id == Country.country_id) \
                 .filter(BandCountry.band_id == band['band_id']) \
                 .add_columns(Country.country_name_fr).order_by(Country.country_name_fr)
             country_list = []
@@ -997,7 +1060,7 @@ def list_bands_by_genre(genre_id):
             else:
                 band['country_list'] = "Pas de pays défini"
 
-            genres = BandGenre.query.join(Genre, BandGenre.genre_id==Genre.genre_id) \
+            genres = BandGenre.query.join(Genre, BandGenre.genre_id == Genre.genre_id) \
                 .filter(BandGenre.band_id == band['band_id']) \
                 .add_columns(Genre.genre_name).order_by(Genre.genre_name)
             genre_list = []
@@ -1194,7 +1257,6 @@ def upd_band_comment(comment_id):
 def del_band_comment(comment_id):
     if not logged_in():
         return redirect(url_for('login'))
-    user_id = session.get('user_id')
     band_id = session.get('band_id')
     form = DelEntityForm()
     if form.validate_on_submit():
@@ -1745,33 +1807,6 @@ def db_del_band_comment(comment_id):
         app.logger.error('Error: ' + str(e))
         return False
     return True
-
-
-def load_key():
-    """
-    Load the previously generated key
-    """
-    key_file = app.config.get('ENCRYPT_KEY_FILE')
-    return open(key_file, "rb").read()
-
-
-def encrypt_message(message):
-    """
-    Encrypts a message
-    """
-    key = load_key()
-    encoded_message = message.encode()
-    f = Fernet(key)
-    return f.encrypt(encoded_message)
-
-
-def decrypt_message(encrypted_message):
-    """
-    Decrypts an encrypted message
-    """
-    key = load_key()
-    f = Fernet(key)
-    return f.decrypt(encrypted_message).decode()
 
 
 # Start the server for the application

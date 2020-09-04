@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste de mes Bands</title>
+</head>
+<body>
+
+</body>
+</html>{% extends "base.html" %}
+{% block page_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Listes de mes Bands</h1>
+    </div>
+    <p>
+        {% if bands %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Non du band</th>
+                    <th>Pays</th>
+                    <th>Genres</th>
+                    <th>Fans</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for band in bands %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('show_band', band_id=band['band_id'], return_to="list_my_bands", ent_id=0) }}">{{ band['band_name'] }}</a>
+                        </td>
+                        <td>{{ band.country_list }}</td>
+                        <td>{{ band.genre_list }}</td>
+                        <td>{{ band.count_fans }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <em>Il n'y a pas de band dans la base de données</em>
+        {% endif %}
+    </p>
+    <p>
+        <a href="{{ url_for('index') }}" class="btn btn-default">Retour</a>
+    </p>
+</div>
+{% endblock %}
