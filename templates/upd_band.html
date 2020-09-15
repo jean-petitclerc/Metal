@@ -102,6 +102,49 @@
     <a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour</a>
     <p>&nbsp;</p>
 
+    <h2>Liens</h2>
+    {% if count_links > 0 %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>URL</th>
+                    <th>Modifier</th>
+                    <th>Supprimer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in band.links %}
+                    <tr>
+                        <td>{{ link['link_name'] }}</td>
+                        <td>
+                            <a href="{{ link['link_url'] }}">{{ link['link_url'] }}</a>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('upd_band_link', link_id=link.link_id) }}"
+                               class="btn btn-primary btn-xs" data-title="Modifier">
+                               <span class="glyphicon glyphicon-pencil"></span>
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('del_band_link', link_id=link.link_id) }}"
+                               class="btn btn-danger btn-xs" data-title="Supprimerr">
+                               <span class="glyphicon glyphicon-trash"></span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <em>Aucun lien pour ce band.</em>
+    {% endif %}
+    <p>
+        <a href="{{ url_for('add_band_link') }}" class="btn btn-default">Ajouter un lien</a>
+        <a href="{{ url_for('list_bands') }}" class="btn btn-default">Retour</a>
+    </p>
+    <p>&nbsp;</p>
+
     <h2>Ton évaluation et commentaire</h2>
     {% if band_comment %}
         <h3>Évaluation</h3>

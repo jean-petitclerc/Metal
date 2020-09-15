@@ -26,7 +26,8 @@ from wtforms.validators import (DataRequired,
                                 Email,
                                 EqualTo,
                                 Length,
-                                Optional)  # Length, NumberRange
+                                Optional,
+                                URL)  # Length, NumberRange
 from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
@@ -104,6 +105,7 @@ class Band(db.Model):
     countries = db.relationship('BandCountry', backref='tband', lazy='dynamic')
     comments = db.relationship('BandComment', backref='tband', lazy='dynamic')
     fans = db.relationship('UserBand', backref='tband', lazy='dynamic')  # User's library
+    links = db.relationship('BandLink', backref='tband', lazy='dynamic')
 
     def __init__(self, band_name, band_desc, audit_crt_user_id, audit_ct_ts):
         self.band_name = band_name
@@ -112,7 +114,29 @@ class Band(db.Model):
         self.audit_crt_ts = audit_ct_ts
 
     def __repr__(self):
-        return '<server: {}:{}>'.format(self.srvr_id, self.srvr_name)
+        return '<band: {}:{}>'.format(self.band_id, self.band_name)
+
+
+class BandLink(db.Model):
+    __tablename__ = 'tband_link'
+    link_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    band_id = db.Column(db.Integer, db.ForeignKey('tband.band_id'))
+    link_name = db.Column(db.String(32), nullable=False)
+    link_url = db.Column(db.String(100), nullable=False)
+    audit_crt_user_id = db.Column(db.Integer(), nullable=False)
+    audit_crt_ts = db.Column(db.DateTime(), nullable=False)
+    audit_upd_user_id = db.Column(db.Integer(), nullable=True)
+    audit_upd_ts = db.Column(db.DateTime(), nullable=True)
+
+    def __init__(self, band_id, link_name, link_url, audit_crt_user_id, audit_ct_ts):
+        self.band_id = band_id
+        self.link_name = link_name
+        self.link_url = link_url
+        self.audit_crt_user_id = audit_crt_user_id
+        self.audit_crt_ts = audit_ct_ts
+
+    def __repr__(self):
+        return '<link: {}:{}>'.format(self.link_id, self.link_name)
 
 
 class UserBand(db.Model):
@@ -311,6 +335,20 @@ class UpdBandCommentForm(FlaskForm):
     rating = RadioField('Evaluation', choices=[(1, 'Médiocre'), (2, 'Pas très bon'), (3, 'Pas si pire'), (4, 'Bon'),
                                                (5, 'Excellent'), (0, "Pas d'évaluation")])
     submit = SubmitField('Modifier')
+
+
+# Formulaires pour ajouter un link
+class AddBandLinkForm(FlaskForm):
+    link_name = StringField('Nom du lien', validators=[DataRequired(message='Le nom est requis.')])
+    link_url = StringField('URL', validators=[DataRequired(message="Le URL est requis."), URL(message="URL invalide.")])
+    submit = SubmitField('Ajouter')
+
+
+class UpdBandLinkForm(FlaskForm):
+    link_name = StringField('Nom du lien', validators=[DataRequired(message='Le nom est requis.')])
+    link_url = StringField('URL', validators=[DataRequired(message="Le URL est requis."), URL(message="URL invalide.")])
+    submit = SubmitField('Modifier')
+
 
 # The following functions are views
 # ----------------------------------------------------------------------------------------------------------------------
@@ -867,6 +905,11 @@ def upd_band(band_id):
         genre['genre_name'] = qgenre.genre_name
         genres.append(genre)
         count_genres += 1
+    count_links = 0
+    links = []
+    for link in band.links:
+        count_links += 1
+
     band_comment = BandComment.query.filter_by(band_id=band_id, user_id=user_id).first()
 
     form = UpdBandForm()
@@ -888,7 +931,8 @@ def upd_band(band_id):
         form.band_desc.data = band.band_desc
         return render_template("upd_band.html", form=form, band=band,
                                countries=countries, count_countries=count_countries,
-                               genres=genres, count_genres=count_genres, band_comment=band_comment)
+                               genres=genres, count_genres=count_genres,
+                               band_comment=band_comment, count_links=count_links)
 
 
 @app.route('/del_band/<int:band_id>', methods=['GET', 'POST'])
@@ -1275,6 +1319,73 @@ def del_band_comment(comment_id):
             return redirect(url_for('upd_band', band_id=band_id))
 
 
+@app.route('/add_band_link', methods=['GET', 'POST'])
+def add_band_link():
+    if not logged_in():
+        return redirect(url_for('login'))
+    app.logger.debug('Entering add_band_link')
+    band_id = session.get('band_id')
+    form = AddBandLinkForm()
+    if form.validate_on_submit():
+        app.logger.debug('Inserting a new link')
+        link_name = request.form['link_name']
+        link_url = request.form['link_url']
+        if db_add_band_link(band_id, link_name, link_url):
+            flash('Le nouveau lien est ajouté.')
+            return redirect(url_for('upd_band', band_id=band_id))
+        else:
+            flash('Une erreur de base de données est survenue.')
+            abort(500)
+    return render_template('add_band_link.html', form=form, band_id=band_id)
+
+
+@app.route('/upd_band_link/<int:link_id>', methods=['GET', 'POST'])
+def upd_band_link(link_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    band_id = session.get('band_id')
+    link = db_band_link_by_id(link_id)
+    if link is None:
+        flash("L'information n'a pas pu être retrouvée.")
+        return redirect(url_for('upd_band', band_id=band_id))
+    form = UpdBandLinkForm()
+    if form.validate_on_submit():
+        app.logger.debug('Updating a link')
+        link_name = form.link_name.data
+        link_url = form.link_url.data
+        if db_upd_band_link(link_id, link_name, link_url):
+            flash("Le lien a été modifié.")
+        else:
+            flash("Quelque chose n'a pas fonctionné.")
+        return redirect(url_for('upd_band', band_id=band_id))
+    else:
+        form.link_name.data = link.link_name
+        form.link_url.data = link.link_url
+        return render_template("upd_band_link.html", form=form, link=link)
+
+
+@app.route('/del_band_link/<int:link_id>', methods=['GET', 'POST'])
+def del_band_link(link_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    band_id = session.get('band_id')
+    form = DelEntityForm()
+    if form.validate_on_submit():
+        app.logger.debug('Deleting a link')
+        if db_del_band_link(link_id):
+            flash("Le lien a été effacé.")
+        else:
+            flash("Quelque chose n'a pas fonctionné.")
+        return redirect(url_for('upd_band', band_id=band_id))
+    else:
+        link = db_band_link_by_id(link_id)
+        if link:
+            return render_template('del_band_link.html', form=form, link=link)
+        else:
+            flash("L'information n'a pas pu être retrouvée.")
+            return redirect(url_for('upd_band', band_id=band_id))
+
+
 # Application functions
 # ----------------------------------------------------------------------------------------------------------------------
 def logged_in():
@@ -1642,6 +1753,8 @@ def db_del_band(band_id):
             db.session.delete(genre)
         for country in band.countries:
             db.session.delete(country)
+        for link in band.links:
+            db.session.delete(link)
         db.session.delete(band)
         db.session.commit()
     except Exception as e:
@@ -1802,6 +1915,58 @@ def db_del_band_comment(comment_id):
     try:
         comment = BandComment.query.get(comment_id)
         db.session.delete(comment)
+        db.session.commit()
+    except Exception as e:
+        app.logger.error('Error: ' + str(e))
+        return False
+    return True
+
+
+def db_band_link_by_id(link_id):
+    try:
+        link = BandLink.query.get(link_id)
+        if link:
+            return link
+        else:
+            return None
+    except Exception as e:
+        app.logger.error('Error: ' + str(e))
+        return None
+
+
+def db_add_band_link(band_id, link_name, link_url):
+    audit_crt_user = session.get('user_id', None)
+    audit_crt_ts = datetime.now()
+    link = BandLink(band_id, link_name, link_url, audit_crt_user, audit_crt_ts)
+    try:
+        db.session.add(link)
+        db.session.commit()
+    except Exception as e:
+        app.logger.error('Error: ' + str(e))
+        return False
+    return True
+
+
+def db_upd_band_link(link_id, link_name, link_url):
+    audit_upd_user = session.get('user_id', None)
+    audit_upd_ts = datetime.now()
+    try:
+        link = BandLink.query.get(link_id)
+        link.link_name = link_name
+        link.link_url = link_url
+        link.audit_upd_user = audit_upd_user
+        link.audit_upd_ts = audit_upd_ts
+        db.session.commit()
+    except Exception as e:
+        app.logger.error('Error: ' + str(e))
+        return False
+    return True
+
+
+def db_del_band_link(link_id):
+    try:
+        link = BandLink.query.get(link_id)
+        db.session.delete(link)
         db.session.commit()
     except Exception as e:
         app.logger.error('Error: ' + str(e))
