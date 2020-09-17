@@ -35,6 +35,31 @@
     {% endif %}
 
     <p>&nbsp</p>
+    <h2>Liens</h2>
+    {% if band.links  %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in band.links %}
+                    <tr>
+                        <td>{{ link['link_name'] }}</td>
+                        <td>
+                            <a href="{{ link['link_url'] }}">{{ link['link_url'] }}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <em>Aucun lien pour ce band.</em>
+    {% endif %}
+    <p>&nbsp;</p>
+
     <h2>Commentaires</h2>
     {% if comments %}
         {% for comment in comments %}
