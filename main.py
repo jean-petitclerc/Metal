@@ -810,7 +810,6 @@ def list_bands():
 
 @app.route('/show_band/<int:band_id>/<string:return_to>/<int:ent_id>')
 def show_band(band_id, return_to, ent_id):
-    # TODO : Lister les liens
     if not logged_in():
         return redirect(url_for('login'))
     try:

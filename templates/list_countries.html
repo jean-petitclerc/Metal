@@ -1,4 +1,16 @@
 {% extends "base.html" %}
+{% block styles %}
+    {{super()}}
+    <link href="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    <script src="https://unpkg.com/tableexport.jquery.plugin/tableExport.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/extensions/export/bootstrap-table-export.min.js"></script>
+{% endblock %}
+
 {% block page_content %}
 <div class="container">
     <div class="page-header">
@@ -6,14 +18,22 @@
     </div>
     <p>
         {% if countries %}
-        <table class="table table-bordered">
+        <table id="table"
+               data-toggle="table"
+               data-toolbar="#toolbar"
+               data-search="true"
+               data-show-columns="true"
+               data-pagination="true"
+               data-id-field="id"
+               data-page-list="[10, 25, 50, 100, all]"
+               data-response-handler="responseHandler">
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Nom français du pays</th>
-                    <th>Nom anglais du pays</th>
-                    <th>Alpha 2</th>
-                    <th>Alpha 3</th>
+                    <th data-field="code" data-sortable="false">Code</th>
+                    <th data-field="nom" data-sortable="true">Nom français du pays</th>
+                    <th data-field="name" data-sortable="true">Nom anglais du pays</th>
+                    <th data-field="alf2" data-sortable="true">Alpha 2</th>
+                    <th data-field="alf3" data-sortable="true">Alpha 3</th>
                     <th>Bands</th>
                     <th class="text-center">Modifier</th>
                     <th class="text-center">Supprimer</th>
@@ -61,4 +81,5 @@
         <a href="{{ url_for('index') }}" class="btn btn-default">Retour</a>
     </p>
 </div>
+
 {% endblock %}
