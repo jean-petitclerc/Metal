@@ -1,4 +1,19 @@
 {% extends "base.html" %}
+
+{% block title %}Métal - Gérer les Genres pour un Band{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    <link href="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    <script src="https://unpkg.com/tableexport.jquery.plugin/tableExport.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/extensions/export/bootstrap-table-export.min.js"></script>
+{% endblock %}
+
 {% block page_content %}
 <div class="container">
     <div class="page-header">
@@ -34,10 +49,18 @@
     <h2>Liste des genres disponibles</h2>
     {% if genres|length > 0 %}
         <p>
-        <table class="table table-bordered">
+        <table id="table"
+               data-toggle="table"
+               data-toolbar="#toolbar"
+               data-search="true"
+               data-show-columns="true"
+               data-pagination="true"
+               data-id-field="id"
+               data-page-list="[10, 25, 50, 100, all]"
+               data-response-handler="responseHandler">
             <thead>
                 <tr>
-                    <th>Nom</th>
+                    <th data-field="nom" data-sortable="true">Nom</th>
                     <th class="text-center">Ajouter</th>
                 </tr>
             </thead>

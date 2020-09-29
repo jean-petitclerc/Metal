@@ -1,4 +1,19 @@
 {% extends "base.html" %}
+
+{% block title %}Métal - Liste des Genres{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    <link href="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    <script src="https://unpkg.com/tableexport.jquery.plugin/tableExport.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/extensions/export/bootstrap-table-export.min.js"></script>
+{% endblock %}
+
 {% block page_content %}
 <div class="container">
     <div class="page-header">
@@ -6,11 +21,19 @@
     </div>
     <p>
         {% if genres %}
-        <table class="table table-bordered">
+        <table id="table"
+               data-toggle="table"
+               data-toolbar="#toolbar"
+               data-search="true"
+               data-show-columns="true"
+               data-pagination="true"
+               data-id-field="id"
+               data-page-list="[10, 25, 50, 100, all]"
+               data-response-handler="responseHandler">
             <thead>
                 <tr>
-                    <th>Non du genre</th>
-                    <th class="text-center">Bands</th>
+                    <th data-field="nom" data-sortable="true">Non du genre</th>
+                    <th data-field="nbrbands" data-sortable="true" class="text-center">Bands</th>
                     <th class="text-center">Modifier</th>
                     <th class="text-center">Supprimer</th>
                 </tr>
@@ -23,7 +46,11 @@
                         </td>
                         <td class="text-center">
                             {% if genre['count_bands'] > 0 %}
-                                <a href="{{ url_for('list_bands_by_genre', genre_id=genre['genre_id']) }}">{{ genre['count_bands'] }}</a>
+                                {{ genre['count_bands'] }}&nbsp;
+                                <a href="{{ url_for('list_bands_by_genre', genre_id=genre['genre_id']) }}"
+                                   class="btn btn-success btn-xs" data-title="Voir">
+                                   <span class="glyphicon glyphicon-list"></span>
+                                </a>
                             {% else %}
                                 0
                             {% endif %}

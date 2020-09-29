@@ -1,13 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Liste des Bands</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>{% extends "base.html" %}
+{% block title %}Métal - Liste des Bands{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    <link href="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    <script src="https://unpkg.com/tableexport.jquery.plugin/tableExport.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/extensions/export/bootstrap-table-export.min.js"></script>
+{% endblock %}
+
 {% block page_content %}
 <div class="container">
     <div class="page-header">
@@ -15,14 +21,21 @@
     </div>
     <p>
         {% if bands %}
-        <a href="#Fin-de-liste">Aller à la fin</a>
-        <table class="table table-bordered">
+        <table id="table"
+               data-toggle="table"
+               data-toolbar="#toolbar"
+               data-search="true"
+               data-show-columns="true"
+               data-pagination="true"
+               data-id-field="id"
+               data-page-list="[10, 25, 50, 100, all]"
+               data-response-handler="responseHandler">
             <thead>
                 <tr>
-                    <th>Non du band</th>
-                    <th>Pays</th>
-                    <th>Genres</th>
-                    <th>Fans</th>
+                    <th data-field="nom" data-sortable="true">Non du band</th>
+                    <th data-field="country" data-sortable="false">Pays</th>
+                    <th data-field="genre" data-sortable="false">Genres</th>
+                    <th data-field="fans" data-sortable="true">Fans</th>
                     <th class="text-center">Suis-je fan?</th>
                     <th class="text-center">Changer</th>
                     <th class="text-center">Modifier</th>
@@ -72,11 +85,10 @@
                 {% endfor %}
             </tbody>
         </table>
-        <a name="Fin-de-liste"></a>
         {% else %}
             <em>Il n'y a pas de band dans la base de données</em>
         {% endif %}
-    </p>
+
     <p>
         <a href="{{ url_for('add_band') }}" class="btn btn-default">Ajouter un band</a>
         <a href="{{ url_for('index') }}" class="btn btn-default">Retour</a>

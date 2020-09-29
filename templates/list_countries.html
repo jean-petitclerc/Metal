@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+
+{% block title %}Métal - Liste des Pays{% endblock %}
+
 {% block styles %}
     {{super()}}
     <link href="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.css" rel="stylesheet">
@@ -34,7 +37,7 @@
                     <th data-field="name" data-sortable="true">Nom anglais du pays</th>
                     <th data-field="alf2" data-sortable="true">Alpha 2</th>
                     <th data-field="alf3" data-sortable="true">Alpha 3</th>
-                    <th>Bands</th>
+                    <th data-field="nbrbands" data-sortable="true">Bands</th>
                     <th class="text-center">Modifier</th>
                     <th class="text-center">Supprimer</th>
                 </tr>
@@ -51,7 +54,11 @@
                         <td>{{ country['country_alpha3'] }}</td>
                         <td class="text-center">
                             {% if country['count_bands'] > 0 %}
-                                <a href="{{ url_for('list_bands_by_country', country_id=country['country_id']) }}">{{ country['count_bands'] }}</a>
+                                {{ country['count_bands'] }}&nbsp;
+                                <a href="{{ url_for('list_bands_by_country', country_id=country['country_id']) }}"
+                                   class="btn btn-success btn-xs" data-title="Voir">
+                                   <span class="glyphicon glyphicon-list"></span>
+                                </a>
                             {% else %}
                                 0
                             {% endif %}
@@ -75,7 +82,7 @@
         {% else %}
             <em>Il n'y a pas de pays dans la base de données</em>
         {% endif %}
-    </p>
+
     <p>
         <a href="{{ url_for('add_country') }}" class="btn btn-default">Ajouter un pays</a>
         <a href="{{ url_for('index') }}" class="btn btn-default">Retour</a>
