@@ -24,14 +24,16 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Nom</th>
+                    <th>Nom français</th>
+                    <th>Nom anglais</th>
                     <th class="text-center">Enlever</th>
                 </tr>
             </thead>
             <tbody>
                 {% for b_c in band_countries %}
                     <tr>
-                        <td>{{ b_c['country_name'] }}</td>
+                        <td>{{ b_c['country_name_fr'] }}</td>
+                        <td>{{ b_c['country_name_en'] }}</td>
                         <td class="text-center">
                             <a href="{{ url_for('del_band_country', country_id=b_c.country_id) }}"
                                class="btn btn-danger btn-xs" data-title="Enlever">
@@ -45,7 +47,9 @@
     {% else %}
         <em>Ce band n'a pas de pays assigné.</em>
     {% endif %}
-
+    <a href="{{ url_for('upd_band', band_id=band_id) }}" class="btn btn-default">Retour</a>
+    <br>
+    <br>
     <h2>Liste des pays disponibles</h2>
     {% if countries|length > 0 %}
         <p>
@@ -56,6 +60,7 @@
                data-show-columns="true"
                data-pagination="true"
                data-id-field="id"
+               data-page-size="50"
                data-page-list="[10, 25, 50, 100, all]"
                data-response-handler="responseHandler">
             <thead>
@@ -83,7 +88,8 @@
     {% else %}
         <em>Aucune pays disponible pour ce band.</em>
     {% endif %}
-    <p>&nbsp;</p>
     <a href="{{ url_for('upd_band', band_id=band_id) }}" class="btn btn-default">Retour</a>
+    <br>
+    <br>
 </div>
 {% endblock %}

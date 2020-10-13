@@ -1,3 +1,7 @@
+#TODO
+# Enrégistrer la dernière écoute
+# List de bands à écouter
+
 from flask import (Flask,
                    session,
                    redirect,
@@ -1225,7 +1229,7 @@ def add_band_genre(genre_id):
     band_id = session.get('band_id')
     if db_add_band_genre(band_id, genre_id):
         flash("Le genre a été ajouté au band.")
-        return redirect(url_for('upd_band', band_id=band_id))
+        return redirect(url_for('sel_band_genre', band_id=band_id))
     else:
         flash('Une erreur de base de données est survenue.')
         abort(500)
@@ -1239,7 +1243,7 @@ def del_band_genre(genre_id):
     band_id = session.get('band_id')
     if db_del_band_genre(band_id, genre_id):
         flash("Le genre a été enlevé pour ce band.")
-        return redirect(url_for('upd_band', band_id=band_id))
+        return redirect(url_for('sel_band_genre', band_id=band_id))
     else:
         flash('Une erreur de base de données est survenue.')
         abort(500)
