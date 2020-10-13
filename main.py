@@ -909,8 +909,8 @@ def upd_band(band_id):
         genres.append(genre)
         count_genres += 1
     count_links = 0
-    links = []
-    for link in band.links:
+    # links = []
+    for _ in band.links:
         count_links += 1
 
     band_comment = BandComment.query.filter_by(band_id=band_id, user_id=user_id).first()
