@@ -36,6 +36,9 @@
                     <th data-field="nom" data-sortable="true">Non du band</th>
                     <th>Pays</th>
                     <th>Genres</th>
+                    <th>J'écoute</th>
+                    <th data-field="last_listened" data-sortable="true">Dernière Écoute</th>
+                    <th>À Écouter</th>
                     <th data-field="fans" data-sortable="true">Fans</th>
                 </tr>
             </thead>
@@ -47,6 +50,32 @@
                         </td>
                         <td>{{ band.country_list }}</td>
                         <td>{{ band.genre_list }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('upd_user_band_listen_ts', band_id=band['band_id']) }}"
+                               class="btn btn-primary btn-xs" data-title="Làlàlà">
+                               <span class="glyphicon glyphicon-headphones"></span>
+                            </a>
+                        </td>
+                        {% if band.last_listened_ts %}
+                            <td>{{ band.last_listened_ts }}</td>
+                        {% else %}
+                            <td>Jamais</td>
+                        {% endif %}
+                        {% if band.mark_to_listen %}
+                            <td class="text-center">
+                                <a href="{{ url_for('reset_band_to_listen', band_id=band['band_id']) }}"
+                                   class="btn btn-danger btn-xs" data-title="Retirer">
+                                    <span class="glyphicon glyphicon-minus"></span>
+                                </a>
+                            </td>
+                        {% else %}
+                            <td class="text-center">
+                                <a href="{{ url_for('set_band_to_listen', band_id=band['band_id']) }}"
+                                   class="btn btn-success btn-xs" data-title="Ajouter">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                </a>
+                            </td>
+                        {% endif %}
                         <td>{{ band.count_fans }}</td>
                     </tr>
                 {% endfor %}

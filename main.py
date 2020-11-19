@@ -149,6 +149,8 @@ class UserBand(db.Model):
     user_id = db.Column(db.Integer(), db.ForeignKey('tapp_user.user_id'))
     band_id = db.Column(db.Integer, db.ForeignKey('tband.band_id'))
     audit_crt_ts = db.Column(db.DateTime(), nullable=False)
+    last_listened_ts = db.Column(db.DateTime(), nullable=True)
+    mark_to_listen = db.Column(db.Boolean(), default=False)
 
     def __init__(self, user_id, band_id, audit_crt_ts):
         self.user_id = user_id
@@ -972,7 +974,7 @@ def list_my_bands():
         user_id = session.get('user_id')
         results = UserBand.query.join(Band) \
             .filter(UserBand.user_id == user_id) \
-            .add_columns(Band.band_id, Band.band_name) \
+            .add_columns(Band.band_id, Band.band_name, UserBand.last_listened_ts, UserBand.mark_to_listen) \
             .order_by(Band.band_name)
 
         bands = []
@@ -980,6 +982,12 @@ def list_my_bands():
             band = dict()
             band['band_id'] = row[1]
             band['band_name'] = row[2]
+            if row[3] is None:
+                band['last_listened_ts'] = 'Jamais'
+            else:
+                band['last_listened_ts'] = str(row[3])[0:16]
+            band['mark_to_listen'] = row[4]
+            # app.logger.debug(band['band_name'] + ' ' + str(band['last_listened_ts']))
             bands.append(band)
 
         for band in bands:
@@ -1151,6 +1159,42 @@ def del_fan(band_id):
     else:
         flash('Une erreur de base de données est survenue.')
         abort(500)
+
+
+@app.route('/upd_user_band_listen_ts/<int:band_id>', methods=['GET', 'POST'])
+def upd_user_band_listen_ts(band_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    user_id = session.get('user_id')
+    if db_upd_user_band_listen_ts(band_id, user_id):
+        flash("L'écoute a été inscrite.")
+    else:
+        flash("Quelque chose n'a pas fonctionné.")
+    return redirect(url_for('list_my_bands'))
+
+
+@app.route('/set_band_to_listen/<int:band_id>', methods=['GET', 'POST'])
+def set_band_to_listen(band_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    user_id = session.get('user_id')
+    if db_upd_user_band_to_listen(band_id, user_id, True):
+        flash("Le band est mis sur la liste d'écoute.")
+    else:
+        flash("Quelque chose n'a pas fonctionné.")
+    return redirect(url_for('list_my_bands'))
+
+
+@app.route('/reset_band_to_listen/<int:band_id>', methods=['GET', 'POST'])
+def reset_band_to_listen(band_id):
+    if not logged_in():
+        return redirect(url_for('login'))
+    user_id = session.get('user_id')
+    if db_upd_user_band_to_listen(band_id, user_id, False):
+        flash("Le band est retiré de la liste d'écoute.")
+    else:
+        flash("Quelque chose n'a pas fonctionné.")
+    return redirect(url_for('list_my_bands'))
 
 
 # Views for BandCountry
@@ -1396,7 +1440,7 @@ def logged_in():
     if user_email:
         active_time = session['active_time']
         delta = datetime.now() - active_time
-        if (delta.days > 0) or (delta.seconds > 1800):
+        if (delta.days > 2) or (delta.seconds > 1800):
             flash('Votre session est expirée.')
             return False
         session['active_time'] = datetime.now()
@@ -1796,6 +1840,35 @@ def db_del_fan(band_id, user_id):
         fan = UserBand.query.filter_by(band_id=band_id, user_id=user_id).first()
         db.session.delete(fan)
         db.session.commit()
+    except Exception as e:
+        app.logger.error('Error: ' + str(e))
+        return False
+    return True
+
+
+def db_upd_user_band_listen_ts(band_id, user_id):
+    last_listened_ts = datetime.now()
+    try:
+        u_b = UserBand.query.filter_by(band_id=band_id, user_id=user_id).first()
+        if u_b is None:
+            return False
+        else:
+            u_b.last_listened_ts = last_listened_ts
+            db.session.commit()
+    except Exception as e:
+        app.logger.error('Error: ' + str(e))
+        return False
+    return True
+
+
+def db_upd_user_band_to_listen(band_id, user_id, mark_to_listen):
+    try:
+        u_b = UserBand.query.filter_by(band_id=band_id, user_id=user_id).first()
+        if u_b is None:
+            return False
+        else:
+            u_b.mark_to_listen = mark_to_listen
+            db.session.commit()
     except Exception as e:
         app.logger.error('Error: ' + str(e))
         return False
