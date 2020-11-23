@@ -1021,6 +1021,60 @@ def list_my_bands():
         abort(500)
 
 
+@app.route('/list_bands_to_listen')
+def list_bands_to_listen():
+    if not logged_in():
+        return redirect(url_for('login'))
+    try:
+        user_id = session.get('user_id')
+        results = UserBand.query.join(Band) \
+            .filter(UserBand.user_id == user_id, UserBand.mark_to_listen == True) \
+            .add_columns(Band.band_id, Band.band_name, UserBand.last_listened_ts, UserBand.mark_to_listen) \
+            .order_by(Band.band_name)
+
+        bands = []
+        for row in results:
+            band = dict()
+            band['band_id'] = row[1]
+            band['band_name'] = row[2]
+            if row[3] is None:
+                band['last_listened_ts'] = 'Jamais'
+            else:
+                band['last_listened_ts'] = str(row[3])[0:16]
+            band['mark_to_listen'] = row[4]
+            bands.append(band)
+
+        for band in bands:
+            band['count_fans'] = UserBand.query.filter_by(band_id=band['band_id']).count()
+
+            countries = BandCountry.query.join(Country, BandCountry.country_id == Country.country_id) \
+                .filter(BandCountry.band_id == band['band_id']) \
+                .add_columns(Country.country_name_fr).order_by(Country.country_name_fr)
+            country_list = []
+            for row in countries:
+                country_list.append(row[1])
+            if len(country_list) > 0:
+                band['country_list'] = ', '.join(country_list)
+            else:
+                band['country_list'] = "Pas de pays défini"
+
+            genres = BandGenre.query.join(Genre, BandGenre.genre_id == Genre.genre_id) \
+                .filter(BandGenre.band_id == band['band_id']) \
+                .add_columns(Genre.genre_name).order_by(Genre.genre_name)
+            genre_list = []
+            for row in genres:
+                genre_list.append(row[1])
+            if len(genre_list) > 0:
+                band['genre_list'] = ', '.join(genre_list)
+            else:
+                band['genre_list'] = "Pas de genre défini"
+        return render_template('list_bands_to_listen.html', bands=bands)
+    except Exception as e:
+        flash("Quelque chose n'a pas fonctionné.")
+        app.logger.error('Error: ' + str(e))
+        abort(500)
+
+
 @app.route('/list_bands_by_country/<int:country_id>')
 def list_bands_by_country(country_id):
     if not logged_in():
