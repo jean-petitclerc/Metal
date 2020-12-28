@@ -19,6 +19,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://user:password@server:port/db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'app secret key'
+    SESSION_COOKIE_NAME = 'Metal'
 ```
 
 ## Execution ##

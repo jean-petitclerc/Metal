@@ -41,6 +41,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.logger.debug("Session cookie name: " + app.config['SESSION_COOKIE_NAME'])
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
@@ -1038,7 +1039,7 @@ def list_bands_to_listen():
             band['band_id'] = row[1]
             band['band_name'] = row[2]
             if row[3] is None:
-                band['last_listened_ts'] = 'Jamais'
+                band['last_listened_ts'] = "Jamais"
             else:
                 band['last_listened_ts'] = str(row[3])[0:16]
             band['mark_to_listen'] = row[4]
@@ -1865,7 +1866,7 @@ def db_del_band(band_id):
 
 
 def db_is_fan(band_id, user_id):
-    app.logger.debug('Entering db_is_fan with: ' + str(band_id) + ':' + str(user_id))
+    # app.logger.debug('Entering db_is_fan with: ' + str(band_id) + ':' + str(user_id))
     try:
         fan = UserBand.query.filter_by(band_id=band_id, user_id=user_id).first()
         if fan is None:
