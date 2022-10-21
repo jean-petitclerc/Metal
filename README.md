@@ -9,6 +9,12 @@
 - email-validator
 - psycog2 (Needs: yum install libpq-devel python-devel)
 
+```
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## Config ##
 
 ```
@@ -22,8 +28,16 @@ class Config(object):
     SESSION_COOKIE_NAME = 'Metal'
 ```
 
+## Create the DB ##
+
+```
+python
+from main import db
+db.create_all()
+```
+
 ## Execution ##
 
 ```
-python main.py rnnserver -p port -h host
+python main.py runserver -p port -h host
 ```
