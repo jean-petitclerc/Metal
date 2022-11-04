@@ -24,7 +24,6 @@
     <form class="form" method="post" role="form">
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
-        <h4>Évaluation</h4>
         {% for subfield in form.rating %}
             &nbsp;&nbsp;{{ subfield }}&nbsp;{{ subfield.label }}
             <br>
